@@ -1,6 +1,8 @@
+physics = require("physics")
 local json = require( "json" )  -- Include the Corona JSON library
 local widget = require( "widget" )
 local lfs = require("lfs")
+local network = require("network")
 --immiediate code
 local directory = system.pathForFile("", system.DocumentsDirectory)
 -- Change the working directory to the Documents directory
@@ -33,20 +35,51 @@ function table.clear(t)
 		t [k] = nil
 	end
 end
-function saveFile(fileName,content)
-	filePath=system.pathForFile( fileName , system.DocumentsDirectory)
-    local file,err = io.open(filePath,'w')
-    if file then
-        file:write(content)
-        file:close()
-    else
-        print("error:", err) -- not so hard?
-		native.showAlert(
-			"Error",                  -- Title of the alert box
-			"Error: " .. (err or "Unknown error"),  -- Message to display, using `err` if available
-			{ "OK" }                   -- Button label(s)
-		)
-    end
+function saveFile(fileName,content,server)
+	if not sevrer then
+		server="https://amjp.psy-k.org/omocha123"	
+	end
+
+	-- URL of the PHP script
+	local url = server .."/uploadOmocha123file.php" -- Replace with your actual server URL
+
+	-- String to post
+	local filename = fileName -- Replace with the filename string
+	local fileContent = content -- Replace with the content string
+
+	--native.showAlert("alertbox", "filename" .. filename .. "filecontent"..fileContent, {"OK"})
+	-- Function to handle network response
+	local function networkListener(event)
+		--native.showAlert("alertbox", "here1" .. filename .. "filecontent"..fileContent, {"OK"})
+		if (event.isError) then
+			print("Network error: ", event.response)
+			native.showAlert("Error", "Network error occurred.", {"OK"})
+		else
+			print("Response: ", event.response)
+			--** show reponse to see if it works on android
+			native.showAlert("Response", event.response, {"OK"})
+			if event.response ~= "File accepted" then
+				native.showAlert("Response", event.response, {"OK"})
+			end
+		end
+	end
+
+	-- Prepare the POST data
+	local params = {
+		body = "filename=" .. fileName .. "&omocha123=" .. fileContent,
+		headers = {
+			["Content-Type"] = "application/x-www-form-urlencoded",
+		}
+	}
+
+	-- Send POST request
+	--native.showAlert("alertbox", "here2url:" .. url.."fileName:"..fileName.. "&omocha123=" .. fileContent, {"OK"})
+	--it is crashing next statement filename is empty!
+
+	network.request(url, "POST", networkListener, params)
+
+	--native.showAlert("alertbox", "here3" .. filename .. "filecontent"..fileContent, {"OK"})
+
 end
 
 function splitString(inputstr, sep)
@@ -81,8 +114,12 @@ function dumpTable(o)
  end
 
 -- Function to get all files with a specific extension
-local function getFilesWithExtension(directory, extension)
-    local files = {}
+local function getFilesWithExtension(directory, extension,server)
+	if not sevrer then
+		server="https://amjp.psy-k.org/omocha123/"	
+	end
+	local files = {}
+	--[[
 	local success, errorString = lfs.chdir(directory)
     if not success then
 		local function onComplete(event)
@@ -97,20 +134,73 @@ local function getFilesWithExtension(directory, extension)
 		)
 		return files
 	end
-	-- Iterate over each file in the directory
-    for file in lfs.dir(directory) do
-        -- Check if it's not a hidden file and ends with the desired extension
-        if file ~= "." and file ~= ".." and file:match("%." .. extension .. "$") then
-            table.insert(files, file)
-        end
-    end
+	]]
+	-- URL of the PHP script
+	local url = server .. "/listFilesOmocha123.php" -- Replace with your actual server URL
 
-    return files
+	-- String to post
+	--local filename = "testfile.txt" -- Replace with the filename string
+	--local fileContent = "This is the content of the file." -- Replace with the content string
+
+	-- Function to handle network response
+	local function networkListener(event)
+		if (event.isError) then
+			print("Network error: ", event.response)
+			native.showAlert("Error", "Network error occurred.", {"OK"}, function() end)
+		else
+			print("Response: ", event.response)
+			--native.showAlert("Response", event.response, {"OK"}, function() end)
+			-- Iterate over each file in the directory
+			local filesArray=splitString(event.response, ",")
+			
+			return filesArray
+			--[[
+			for file in filesArray do
+				-- Check if it's not a hidden file and ends with the desired extension
+				if file ~= "." and file ~= ".." and file:match("%." .. extension .. "$") then
+					table.insert(files, file)
+				end
+			end
+
+			return files
+			]]
+		end
+	end
+
+	-- Prepare the POST data
+	local params = {
+		body = "",--no data needs to be send
+		headers = {
+			["Content-Type"] = "application/x-www-form-urlencoded",
+		}
+	}
+
+	-- Send POST request
+	network.request(url, "POST", networkListener, params)
+
+	-- Example of showing an alert box with a variable's content
+	local function showAlert()
+		local alertMessage = "The filename is: " .. filename
+		native.showAlert("Alert", alertMessage, {"OK"}, function() end)
+	end
+
+	-- Show the alert box
+	--showAlert()
+
 end
  
 -- Require and start the physics engine.
-physics = require("physics")
+
 physics.start()
+
+--ugly hacks to get the physics working simillar on different pllatforms
+if system.getInfo("environment") == "browser" then
+	physics.setScale( 32.5 )	
+end
+if system.getInfo("platform") == "android"  then
+	physics.setScale( 40 )	
+end
+
 --physics.setGravity( 0, 98.1 ) -- Setting a very high gravity.
 physics.setGravity( 0, 0 ) -- start simulation with no gravity
 
@@ -242,7 +332,7 @@ local function dragObject( event, params )
 		end
 		if event.target.myName=="loadTool" then
 			print("load stage clicked")
-			displayFileList("Load from file:","omocha123")
+			displayFileList("Load from file:","txt")
 			return true
 		end
 		display.getCurrentStage():setFocus( event.target, event.id )
@@ -921,32 +1011,34 @@ balloonLevitateTimer = timer.performWithDelay( 180, balloonLevitate, 0 )
 
 removequeue={}
 local function onGlobalCollision( event )
-	if event.object1.myName and event.object2.myName then
-		if ( event.phase == "began" ) then
-			print( "began: " .. event.object1.myName .. " and " .. event.object2.myName )
-			if event.object1.myName=="balloon" and event.object2.myName=="spike" then
-				for key, item in ipairs(itemTable) do
-					if item == event.object1 then
-						table.remove(itemTable, key);
-						--physics.removeBody(event.object1)
-						--event.object1:removeSelf()
-						table.insert(removequeue,event.object1)
-						break
+	if physicsRun then
+		if event.object1.myName and event.object2.myName then
+			if ( event.phase == "began" ) then
+				print( "began: " .. event.object1.myName .. " and " .. event.object2.myName )
+				if event.object1.myName=="balloon" and event.object2.myName=="spike" then
+					for key, item in ipairs(itemTable) do
+						if item == event.object1 then
+							table.remove(itemTable, key);
+							--physics.removeBody(event.object1)
+							--event.object1:removeSelf()
+							table.insert(removequeue,event.object1)
+							break
+						end
+					end
+				elseif event.object1.myName=="spike" and event.object2.myName=="balloon" then
+					for key, item in ipairs(itemTable) do
+						if item == event.object2 then
+							table.remove(itemTable, key);
+							--physics.removeBody(event.object2)
+							--event.object2:removeSelf()
+							table.insert(removequeue,event.object2)
+							break
+						end
 					end
 				end
-			elseif event.object1.myName=="spike" and event.object2.myName=="balloon" then
-				for key, item in ipairs(itemTable) do
-					if item == event.object2 then
-						table.remove(itemTable, key);
-						--physics.removeBody(event.object2)
-						--event.object2:removeSelf()
-						table.insert(removequeue,event.object2)
-						break
-					end
-				end
+			elseif ( event.phase == "ended" ) then
+				print( "ended: " .. event.object1.myName .. " and " .. event.object2.myName )
 			end
-		elseif ( event.phase == "ended" ) then
-			print( "ended: " .. event.object1.myName .. " and " .. event.object2.myName )
 		end
 	end
 end
@@ -958,24 +1050,30 @@ local button1
 local textBoxBackground
 local myText
 local defaultField
-local inputedText
+inputedText=""
+total=""
+textField=nil
 local tableView
 
-local function textListener( event )
+function textListener( event )
  
     if ( event.phase == "began" ) then
         -- User begins editing "defaultField"
  
     elseif ( event.phase == "ended" or event.phase == "submitted" ) then
         -- Output resulting text from "defaultField"
-        print( event.target.text )
- 
+		--both of the following are empty!!!
+		print( "ended input event :" .. textField.text) 
+		print( "ended input event :" .. event.target.text) 
+		print( "new characters :" .. inputedText)
     elseif ( event.phase == "editing" ) then
-        print( event.newCharacters )
+        --this is not ideal but at least it works
+		inputedText=inputedText..event.newCharacters
+		print( event.newCharacters )
         print( event.oldText )
         print( event.startPosition )
         print( event.text )
-		inputedText=event.text
+		--inputedText=event.text
     end
 end
 
@@ -985,20 +1083,38 @@ local function handleButtonEvent( event )
  
     if ( "ended" == event.phase ) then
         print( "Button was pressed and released" )
+		--**probl;em with input text!!! it is empty!problem with total variable? out of scope?
+		--native.showAlert("alertbox", "here99".. inputedText.."total"..total, {"OK"})
+		saveFile(inputedText,total)
 		button1:removeSelf()
 		textBoxBackground:removeSelf()
 		myText:removeSelf()
-		defaultField:removeSelf()
-		saveFile(inputedText..".omocha123",total)
+		textField:removeSelf()
+		inputedText=""
+		--defaultField	
     end
 end
-
+--[[
+timer.performWithDelay(100, function()
+    if textField and textField.text then
+		inputedText=textField.text
+        print("Current text field content: " .. textField.text)
+    end
+end, 0)
+]]
 
 function displayInputBox(prompt)
 	myText = display.newText( prompt, 300, 200, native.systemFont, 24 )
 	myText:setFillColor( 1, 1, 1 )
-	defaultField = native.newTextField( gridSize*5, gridSize*5, 380, 30 )
-	defaultField:addEventListener( prompt, textListener )
+
+
+
+	textField = native.newTextField(gridSize*5, gridSize*5, 380, 30)
+	textField.placeholder = "File name"
+	textField:addEventListener("userInput", textListener)
+	textField.text = ""
+	--defaultField = native.newTextField( gridSize*5, gridSize*5, 380, 30 )
+	--defaultField:addEventListener( prompt, textListener )
 	-- Create the widget
 	button1 = widget.newButton(
 		{
@@ -1074,15 +1190,63 @@ local function onRowTouch(event)
         -- Perform action when row is clicked (released)
         row.alpha = 1 -- Restore row alpha
         print("Clicked row: " .. params.filename)
-		loadStageFromFile(params.filename)
+        -- Custom logic: open file, change scene, etc.
+		--**loadStageFromFile(params.filename)
+		if not sevrer then
+			server="https://amjp.psy-k.org/omocha123/"	
+		end
+	
+		-- URL of the PHP script
+		local url = server .."/downloadOmocha123file.php" -- Replace with your actual server URL
+	
+		-- String to post
+		local filename = params.filename -- Replace with the filename string
+		--local fileContent = content -- Replace with the content string
+	
+		-- Function to handle network response
+		local function networkListener(event)
+			if (event.isError) then
+				print("Network error: ", event.response)
+				native.showAlert("Error", "Network error occurred.", {"OK"})
+			else
+				print("Response: ", event.response)
+				if event.response == nil then
+					native.showAlert("Response", "error occured while loding file from cloud", {"OK"})
+				end
+				if not physicsRun then
+					total=event.response
+					local loadTable=splitString(total,"|")
+					print("items:"..loadTable[1])
+					print("stage properties:"..loadTable[2])
+					savedTable=deepCopy(json.decode( loadTable[1] ))
+					stageProperties=deepCopy(json.decode( loadTable[2] ))
+					print(dumpTable(savedTable))
+					clearAllObjects()
+					reproduceInitioalState()
+				end		
+			end
+		end
+	
+		-- Prepare the POST data
+		local params = {
+			body = "filename=" .. filename,
+			headers = {
+				["Content-Type"] = "application/x-www-form-urlencoded",
+			}
+		}
+	
+		-- Send POST request
+		network.request(url, "POST", networkListener, params)
+	
+	
+		local fileName=params.filename
 		tableView:removeSelf()
 		for key, value in ipairs(textLabelTable) do
 			if value.removeSelf then
 				value:removeSelf()
 			end
 		end
-        -- Custom logic: open file, change scene, etc.
-    end
+	end
 
     return true -- Prevent touch propagation to other objects
 end
@@ -1091,57 +1255,83 @@ function displayFileList(prompt,extention)
 	-- Usage example
 	filePath=system.pathForFile( "" , system.DocumentsDirectory)
 	local directory = filePath -- Current directory
-	local extension = "omocha123" -- Extension you're looking for
-	local omocha123Files = getFilesWithExtension(directory, extension)
-
-	-- Print the results
-	fileX=300
-	fileY=170
-	myText = display.newText( prompt, fileX, fileY, native.systemFont, 50 )
-	myText:setFillColor( 1, 1, 1 )
-	fileY=fileY+50
-	table.insert(textLabelTable,myText)
-	--[[
-	for _, file in ipairs(omocha123Files) do
-		print(file)
-		myText = display.newText( file, fileX, fileY, native.systemFont, 24 )
-		myText:setFillColor( 1, 1, 1 )
-		myText:addEventListener("touch", fileClickEventListener)
-		table.insert(textLabelTable,myText)
-		fileY=fileY+24
-	end
-	]]
-
+	local extension = "txt" -- Extension you're looking for
 	
-	tableView = widget.newTableView(
-    	{
-			left = 200,
-			top = 200,
-			height = 330,
-			width = 300,
-			onRowRender = onRowRender,
-			onRowTouch = onRowTouch,
-			listener = scrollListener
-    	}
-	)
-	
-	-- Insert 40 rows
-	--[[
-	for i = 1, 40 do
-		-- Insert a row into the tableView
-		tableView:insertRow{
-			rowHeight = 40,
-			params = { filename = "test" }
-		} -- Pass file name as parameter}
+	if not sevrer then
+		server="https://amjp.psy-k.org/omocha123/"	
 	end
-	]]--
-	for _, file in ipairs(omocha123Files) do
-		print(file)
-		-- Insert a row into the tableView
-		tableView:insertRow{
-			rowHeight = 40,
-			params = { filename = file }
-		} -- Pass file name as parameter}
+	local files = {}
+	-- URL of the PHP script
+	local url = server .. "/listFilesOmocha123.php" -- Replace with your actual server URL
+
+	-- String to post
+	--local filename = "testfile.txt" -- Replace with the filename string
+	--local fileContent = "This is the content of the file." -- Replace with the content string
+
+	-- Function to handle network response
+	local function networkListener(event)
+		if (event.isError) then
+			print("Network error: ", event.response)
+			native.showAlert("Error", "Network error occurred.", {"OK"}, function() end)
+		else
+			--print("Response: ", event.response)
+			--native.showAlert("Response", event.response, {"OK"}, function() end)
+			-- Iterate over each file in the directory
+			if event.response==nil then
+				native.showAlert("Response", "server empty", {"OK"}, function() end)
+				return false
+			end
+			local omocha123Files = splitString(event.response, ",")
+
+			-- Print the results
+			fileX=300
+			fileY=170
+			myText = display.newText( prompt, fileX, fileY, native.systemFont, 50 )
+			myText:setFillColor( 1, 1, 1 )
+			fileY=fileY+50
+			table.insert(textLabelTable,myText)
+			
+			tableView = widget.newTableView(
+				{
+					left = 200,
+					top = 200,
+					height = 330,
+					width = 300,
+					onRowRender = onRowRender,
+					onRowTouch = onRowTouch,
+					listener = scrollListener
+				}
+			)
+			
+			for _, file in ipairs(omocha123Files) do
+				print(file)
+				-- Insert a row into the tableView
+				tableView:insertRow{
+					rowHeight = 40,
+					params = { filename = file }
+				} -- Pass file name as parameter}
+			end
+		
+			return filesArray
+		end
+	end
+
+	-- Prepare the POST data
+	local params = {
+		body = "",--no data needs to be send
+		headers = {
+			["Content-Type"] = "application/x-www-form-urlencoded",
+		}
+	}
+
+	-- Send POST request
+	print(url)
+	network.request(url, "POST", networkListener, params)
+
+	-- Example of showing an alert box with a variable's content
+	local function showAlert()
+		local alertMessage = "The filename is: " .. filename
+		native.showAlert("Alert", alertMessage, {"OK"}, function() end)
 	end
 
 end
@@ -1237,4 +1427,4 @@ end
 --(fixed,needed to add spikes to first if statement with blocks and circles)bug, spikes cant be pinned
 --(fixed)need to remove submenu when block clicked second time
 --I should make a visual way of seeing the contents of files before you load them
-
+--balloon explode even when not in physicsRun mode
