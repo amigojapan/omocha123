@@ -1066,9 +1066,18 @@ function textListener( event )
 		print( "ended input event :" .. textField.text) 
 		print( "ended input event :" .. event.target.text) 
 		print( "new characters :" .. inputedText)
+		inputedText=event.target.text
+		print("final name is:" .. inputedText)
+
+		--saveFile(inputedText,total)
+		--button1:removeSelf()
+		--textBoxBackground:removeSelf()
+		--myText:removeSelf()
+		--textField:removeSelf()
+		inputedText=""
     elseif ( event.phase == "editing" ) then
         --this is not ideal but at least it works
-		inputedText=inputedText..event.newCharacters
+		--inputedText=inputedText..event.newCharacters
 		print( event.newCharacters )
         print( event.oldText )
         print( event.startPosition )
@@ -1116,6 +1125,7 @@ function displayInputBox(prompt)
 	--defaultField = native.newTextField( gridSize*5, gridSize*5, 380, 30 )
 	--defaultField:addEventListener( prompt, textListener )
 	-- Create the widget
+	--[[
 	button1 = widget.newButton(
 		{
 			label = "button",
@@ -1138,7 +1148,7 @@ function displayInputBox(prompt)
 	
 	-- Change the button's label text
 	button1:setLabel( "Save" )
-
+	]]
 end
 
 local textLabelTable={}
@@ -1349,7 +1359,7 @@ function saveStage()
 		textBoxBackground.strokeWidth = 3
 		textBoxBackground:setFillColor( 0,0,0 )
 		textBoxBackground:setStrokeColor( 0, 1, 0 )
-		displayInputBox("File Name:")
+		displayInputBox("File Name, then [ENTER]")
 	end
 end
 
