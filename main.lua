@@ -3,6 +3,7 @@ local json = require( "json" )  -- Include the Corona JSON library
 local widget = require( "widget" )
 local lfs = require("lfs")
 local network = require("network")
+local UserInput = require("UserInput")
 --immiediate code
 local directory = system.pathForFile("", system.DocumentsDirectory)
 -- Change the working directory to the Documents directory
@@ -35,11 +36,12 @@ function table.clear(t)
 		t [k] = nil
 	end
 end
-function saveFile(fileName,content,server)
+function saveFile(fileName)
+	print("saveFile called, filename"..fileName)
 	if not sevrer then
 		server="https://amjp.psy-k.org/omocha123"	
 	end
-
+	content=total
 	-- URL of the PHP script
 	local url = server .."/uploadOmocha123file.php" -- Replace with your actual server URL
 
@@ -1103,52 +1105,9 @@ local function handleButtonEvent( event )
 		--defaultField	
     end
 end
---[[
-timer.performWithDelay(100, function()
-    if textField and textField.text then
-		inputedText=textField.text
-        print("Current text field content: " .. textField.text)
-    end
-end, 0)
-]]
 
 function displayInputBox(prompt)
-	myText = display.newText( prompt, 300, 200, native.systemFont, 24 )
-	myText:setFillColor( 1, 1, 1 )
-
-
-
-	textField = native.newTextField(gridSize*5, gridSize*5, 380, 30)
-	textField.placeholder = "File name"
-	textField:addEventListener("userInput", textListener)
-	textField.text = ""
-	--defaultField = native.newTextField( gridSize*5, gridSize*5, 380, 30 )
-	--defaultField:addEventListener( prompt, textListener )
-	-- Create the widget
-	--[[
-	button1 = widget.newButton(
-		{
-			label = "button",
-			onEvent = handleButtonEvent,
-			emboss = false,
-			-- Properties for a rounded rectangle button
-			shape = "roundedRect",
-			width = 200,
-			height = 40,
-			cornerRadius = 2,
-			fillColor = { default={0,0,1,1}, over={1,0.1,0.7,0.4} },
-			strokeColor = { default={1,0.4,0,1}, over={0.8,0.8,1,1} },
-			strokeWidth = 4
-		}
-	)
-	
-	-- Center the button
-	button1.x = display.contentCenterX
-	button1.y = display.contentCenterY
-	
-	-- Change the button's label text
-	button1:setLabel( "Save" )
-	]]
+	showInputBox("enter omohca name:",saveFile)
 end
 
 local textLabelTable={}
@@ -1355,10 +1314,10 @@ function saveStage()
 		local serializedJSONblocks = json.encode( savedTable )
 		local serializedJSONstage = json.encode( stageProperties )
 		total=serializedJSONblocks.."|"..serializedJSONstage
-		textBoxBackground=display.newRect( gridSize*5-10, gridSize*5-10, 380+10, gridSize*5+10 )
-		textBoxBackground.strokeWidth = 3
-		textBoxBackground:setFillColor( 0,0,0 )
-		textBoxBackground:setStrokeColor( 0, 1, 0 )
+		--textBoxBackground=display.newRect( gridSize*5-10, gridSize*5-10, 380+10, gridSize*5+10 )
+		--textBoxBackground.strokeWidth = 3
+		--textBoxBackground:setFillColor( 0,0,0 )
+		--textBoxBackground:setStrokeColor( 0, 1, 0 )
 		displayInputBox("File Name, then [ENTER]")
 	end
 end
