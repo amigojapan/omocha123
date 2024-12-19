@@ -9,12 +9,36 @@ rectBorder=nil
 rectEdit=nil
 lblTitle=nil
 editBuffer=nil
+okButton=nil
 local _callback=nil
 
-function myHelpTouchListener( event )
-	print("ok clicked!")
-	_callback(inputBuffer)
-	removerInputBox()
+local function setAllObjectsHitTestable(group, value)
+    value = value or false -- Default to false if no value is provided
+    for i = 1, group.numChildren do
+        local child = group[i]
+        if child then
+            -- Check if the object has the isHitTestable property
+            if child.isHitTestable ~= nil then
+				child.isVisible = value
+                child.isHitTestable = value
+            end
+
+            -- If the child is a group, recurse into it
+            if child.numChildren then
+                setAllObjectsHitTestable(child, value)
+            end
+        end
+    end
+end
+
+
+function okButtonTouchListener( event )
+	if event.phase == "ended" then
+		print("ok clicked!")
+		_callback(inputBuffer)
+		okButton.isVisible=false
+		removerInputBox()
+	end
     return true  -- Prevents tap/touch propagation to underlying objects
 end
 
@@ -29,22 +53,8 @@ local paint = {
 }
 okButton = display.newRect(offsetx, offsety, 200, 100 )
 okButton.fill = paint
-okButton:addEventListener( "touch", myHelpTouchListener )  -- Add a "touch" listener to the obj
+okButton:addEventListener( "touch", okButtonTouchListener )  -- Add a "touch" listener to the obj
 okButton.isVisible=false
-local paint = {
-    type = "image",
-    filename = "img/ok.png"
-}
-myHelpCloseButton = display.newRect(offsetx, offsety, 150, 150 )
-myHelpCloseButton.fill = paint
-
-myHelpCloseButton:addEventListener( "touch", myHelpTouchListener )  -- Add a "touch" listener to the obj
-myHelpCloseButton.isVisible=false
-if system.getInfo("platform")=="html5" then
-	okButton.isVisible=false
-else
-	okButton.isVisible=false
-end
 
 function drawBorder(x,y,width,height)
 		rectBorder = display.newRect(x,y,width,height)
@@ -75,7 +85,7 @@ function removeScreenKeyboard()
 	end
 end
 
-function removerInputBox()
+function removerInputBox(event)
 	if rectBorder.removeSelf then
 		rectBorder:removeSelf()
 	end
@@ -89,13 +99,15 @@ function removerInputBox()
 		editBuffer:removeSelf()
 	end
 	if okButton.removeSelf then
-		--okButton:removeSelf()
 		okButton.isVisible=false
+		okButton:removeSelf()
+		okButton = nil
 	end
 	removeScreenKeyboard()
 	Runtime:removeEventListener( "enterFrame", frameUpdate )
 	Runtime:removeEventListener( "key", onKeyEvent )
 	
+	setAllObjectsHitTestable(display.getCurrentStage(),true)
 end
 
 --handle keystrokes
@@ -155,7 +167,9 @@ function onKeyEvent( event )
 	if event.phase == "down" then
 	else
 		downkey=event.keyName
+		return true
 	end
+	return true
 end
 --help button
 webView=nil
@@ -264,8 +278,15 @@ function bringUpScreenKeyboard()
 end
 
 
+
+
+
 function showInputBox(prompt,callback)
 	print("showInputBox called")
+	--disable isHitTestable for all display objects
+	setAllObjectsHitTestable(display.getCurrentStage(),false)
+	print("All objects set to isHitTestable = false")
+	
 	_callback=callback
 	okButton.isVisible=true
 	drawBorder(display.contentCenterX, display.contentCenterY, 1000-100, 800-50)
@@ -274,14 +295,4 @@ function showInputBox(prompt,callback)
 	Runtime:addEventListener( "key", onKeyEvent )
 	--maybe do this optionally if on touchscreen
 	bringUpScreenKeyboard()	
-end
---call the following way in your program
-function callback(userinput)
-	print("the user inputed"..userinput)
-	native.showAlert(
-		"the user inputed", -- Title of the alert
-		"the user inputed:"..userinput, -- Message content
-		{ "OK" } -- Button labels
-		--onComplete -- Listener for button clicks
-	)
 end
