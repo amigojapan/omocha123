@@ -288,6 +288,19 @@ function showInputBox(prompt,callback)
 	print("All objects set to isHitTestable = false")
 	
 	_callback=callback
+	if okButton == nil then
+		--**fix bug of second click on ok button , it is nill and it crashes
+		offsetx=500
+		offsety=600
+		
+		local paint = {
+			type = "image",
+			filename = "img/ok.png"
+		}
+		okButton = display.newRect(offsetx, offsety, 200, 100 )
+		okButton.fill = paint
+		okButton:addEventListener( "touch", okButtonTouchListener )  -- Add a "touch" listener to the obj
+	end
 	okButton.isVisible=true
 	drawBorder(display.contentCenterX, display.contentCenterY, 1000-100, 800-50)
 	drawInputPrompt(display.contentCenterX, display.contentCenterY, 1000-100, 800-50,prompt)

@@ -1192,6 +1192,9 @@ local function onRowTouch(event)
 					print(dumpTable(savedTable))
 					clearAllObjects()
 					reproduceInitioalState()
+					if tableView then
+							tableView=nil
+					end
 				end		
 			end
 		end
@@ -1216,7 +1219,6 @@ local function onRowTouch(event)
 			end
 		end
 	end
-
     return true -- Prevent touch propagation to other objects
 end
 
@@ -1239,6 +1241,10 @@ function displayFileList(prompt,extention)
 
 	-- Function to handle network response
 	local function networkListener(event)
+		if tableView then
+			--todo, add cancel button
+			return
+		end
 		if (event.isError) then
 			print("Network error: ", event.response)
 			native.showAlert("Error", "Network error occurred.", {"OK"}, function() end)
