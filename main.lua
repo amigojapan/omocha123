@@ -315,6 +315,23 @@ addBalloon=nil
 addSpike=nil
 submenuShowing=false
 
+function initTools()
+	addBlockTool.alpha=1
+	runTool.alpha=1
+	pinOnTool.alpha=0.3
+	pinOffTool.alpha=0.3
+	if stageProperties.gravity=="off" then
+		gravityOnTool.alpha=1
+		gravityOffTool.alpha=0.3
+	else
+		gravityOnTool.alpha=0.3
+		gravityOffTool.alpha=1
+	end					
+	deleteTool.alpha=0.3
+	loadTool.alpha=1
+	saveTool.alpha=1
+	arc.alpha=0.3
+end
 local function dragObject( event, params )
 	local body = event.target
 	local phase = event.phase
@@ -340,6 +357,22 @@ local function dragObject( event, params )
 		display.getCurrentStage():setFocus( event.target, event.id )
 		if event.target.myName=="block" or event.target.myName=="circle" or event.target.myName=="balloon" or event.target.myName=="spike" or event.target.myName=="brick" then--move above selected item
 			editingItem=event.target
+			if editingItem.bodyType == "static" then
+				pinOnTool.alpha=0.3
+				pinOffTool.alpha=1
+			else
+				pinOnTool.alpha=1
+				pinOffTool.alpha=0.3
+			end
+			if physicsRun then--**include pin on and pin off tool
+				pinOnTool.alpha=0.3
+				pinOffTool.alpha=0.3
+				deleteTool.alpha=0.3
+				arc.alpha=0.3
+			else
+				deleteTool.alpha=1
+			end
+			--arc.alpha=1		
 		end
 		selectedItem=event.target
 		if selectedItem.myName~="arc" then
@@ -359,6 +392,23 @@ local function dragObject( event, params )
 				physicsRun=false
 				clearAllObjects()
 				reproduceInitioalState()
+				--enable buttons that are disabled
+				addBlockTool.alpha=1
+				runTool.alpha=1
+				pinOnTool.alpha=0.3
+				pinOffTool.alpha=0.3
+				if stageProperties.gravity=="off" then
+					gravityOnTool.alpha=1
+					gravityOffTool.alpha=0.3
+				else
+					gravityOnTool.alpha=0.3
+					gravityOffTool.alpha=1
+				end					
+				deleteTool.alpha=0.3
+				loadTool.alpha=1
+				saveTool.alpha=1
+				arc.alpha=0.3
+
 				return true
 			end
 		else--edit  mode
@@ -374,6 +424,18 @@ local function dragObject( event, params )
 					physics.setGravity( 0, 98.1 )	
 				end
 				physicsRun=true
+				--disable buttons run, gravity, pin, arctool, trash, save and dowload
+				addBlockTool.alpha=0.3
+				runTool.alpha=0.3
+				pinOnTool.alpha=0.3
+				pinOffTool.alpha=0.3
+				gravityOnTool.alpha=0.3
+				gravityOffTool.alpha=0.3
+				deleteTool.alpha=0.3
+				loadTool.alpha=0.3
+				saveTool.alpha=0.3
+				arc.alpha=0.3
+				-- add inputbox to set scale
 				return true
 			end
 			if selectedItem.myName=="addBlockTool" then
@@ -734,6 +796,9 @@ local function dragObject( event, params )
 						table.remove(itemTable, key);
 						physics.removeBody(editingItem)
 						editingItem:removeSelf()
+						deleteTool.alpha=0.3
+						pinOnTool.alpha=0.3
+						pinOffTool.alpha=0.3
 						break
 					end
 				end
@@ -746,6 +811,13 @@ local function dragObject( event, params )
 						editingItem.bodyType = "static"
 						itemTable[key].bodyType = editingItem.bodyType
 						print("item pinned")
+						if editingItem.bodyType == "static" then
+							pinOnTool.alpha=0.3
+							pinOffTool.alpha=1
+						else
+							pinOnTool.alpha=1
+							pinOffTool.alpha=0.3
+						end			
 						break
 					end
 				end
@@ -757,6 +829,13 @@ local function dragObject( event, params )
 					if item == editingItem then
 						editingItem.bodyType = "dynamic"
 						itemTable[key].bodyType = editingItem.bodyType
+						if editingItem.bodyType == "static" then
+							pinOnTool.alpha=0.3
+							pinOffTool.alpha=1
+						else
+							pinOnTool.alpha=1
+							pinOffTool.alpha=0.3
+						end			
 						break
 					end
 				end
@@ -765,11 +844,15 @@ local function dragObject( event, params )
 			if selectedItem.myName=="gravityOffTool" then
 				print("gravity off tool clicked!")
 					stageProperties.gravity="off"
+					gravityOnTool.alpha=1
+					gravityOffTool.alpha=0.3
 				return true
 			end
 			if selectedItem.myName=="gravityOnTool" then
 				print("gravity off tool clicked!")
 					stageProperties.gravity="on"
+					gravityOnTool.alpha=0.3
+					gravityOffTool.alpha=1
 				return true
 			end
 		end
@@ -835,6 +918,7 @@ pinOffTool:addEventListener( "touch", dragObject )
 gravityOffTool:addEventListener( "touch", dragObject )
 gravityOnTool:addEventListener( "touch", dragObject )
 
+initTools()--inital setting of alpha channels
 -- sword:addEventListener( "touch", dragObject ) -- Uncomment to make the sword draggable too.
 
 function clearAllObjects()
