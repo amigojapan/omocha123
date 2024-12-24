@@ -36,6 +36,15 @@ function table.clear(t)
 		t [k] = nil
 	end
 end
+function changeToThisScale(scale)
+	scale=tonumber(scale)
+	physics.setScale(scale)
+end
+
+function changeScale()
+	showInputBox("enter scale number:",saveFile)
+end
+
 function saveFile(fileName)
 	print("saveFile called, filename"..fileName)
 	if not sevrer then
@@ -277,6 +286,13 @@ deleteTool.angularDamping = 3
 deleteTool.myName="deleteTool"
 
 toolBarOffsetX=toolBarOffsetX+1
+scaleTool = display.newImage( "img/scaleTool.png", gridSize*toolBarOffsetX, gridSize*1 )
+physics.addBody( scaleTool, "static", { density=0, friction=0, bounce=0 } )
+scaleTool.angularDamping = 3
+scaleTool.myName="scaleTool"
+
+
+toolBarOffsetX=toolBarOffsetX+1
 saveTool = display.newImage( "img/save.png", gridSize*toolBarOffsetX, gridSize*1 )
 physics.addBody( saveTool, "static", { density=0, friction=0, bounce=0 } )
 saveTool.angularDamping = 3
@@ -331,6 +347,7 @@ function initTools()
 	loadTool.alpha=1
 	saveTool.alpha=1
 	arc.alpha=0.3
+	stopTool.alpha=0.3
 end
 local function dragObject( event, params )
 	local body = event.target
@@ -342,6 +359,11 @@ local function dragObject( event, params )
 		if event.target.myName=="addBlockTool" and submenuShowing then
 			print("addBlockTool is ture and submenuShowing==false")
 			clearSubmenu()
+			return true
+		end
+		if event.target.myName=="scaleTool" then
+			print("scale tool clicked")
+			changeScale()
 			return true
 		end
 		if event.target.myName=="saveTool" then
@@ -364,7 +386,7 @@ local function dragObject( event, params )
 				pinOnTool.alpha=1
 				pinOffTool.alpha=0.3
 			end
-			if physicsRun then--**include pin on and pin off tool
+			if physicsRun then
 				pinOnTool.alpha=0.3
 				pinOffTool.alpha=0.3
 				deleteTool.alpha=0.3
@@ -408,7 +430,8 @@ local function dragObject( event, params )
 				loadTool.alpha=1
 				saveTool.alpha=1
 				arc.alpha=0.3
-
+				stopTool.alpha=0.3
+				
 				return true
 			end
 		else--edit  mode
@@ -425,6 +448,7 @@ local function dragObject( event, params )
 				end
 				physicsRun=true
 				--disable buttons run, gravity, pin, arctool, trash, save and dowload
+				stopTool.alpha=1
 				addBlockTool.alpha=0.3
 				runTool.alpha=0.3
 				pinOnTool.alpha=0.3
@@ -1178,7 +1202,7 @@ local function handleButtonEvent( event )
  
     if ( "ended" == event.phase ) then
         print( "Button was pressed and released" )
-		--**probl;em with input text!!! it is empty!problem with total variable? out of scope?
+		--(fixed by saelf made input tool)probl;em with input text!!! it is empty!problem with total variable? out of scope?
 		--native.showAlert("alertbox", "here99".. inputedText.."total"..total, {"OK"})
 		saveFile(inputedText,total)
 		button1:removeSelf()
