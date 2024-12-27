@@ -30,6 +30,8 @@ display.setDefault( "background", 0, 0.3, 0.8 )
 gridSize=64
 gridWidth=15
 gridHeight=11
+--vatiables
+speed=1
 --helperfunctions
 function table.clear(t)
 	for k in pairs (t) do
@@ -43,6 +45,16 @@ end
 
 function changeScale()
 	showInputBox("enter scale number:",changeToThisScale)
+end
+
+function changeSpeed()
+	if speed == 1 then
+		speed = 2
+	elseif speed == 2 then
+		speed = 1
+	end
+	timer.cancel(balloonLevitateTimer)
+	balloonLevitateTimer = timer.performWithDelay( 180*speed, balloonLevitate, 0 )
 end
 
 function saveFile(fileName)
@@ -291,6 +303,12 @@ physics.addBody( scaleTool, "static", { density=0, friction=0, bounce=0 } )
 scaleTool.angularDamping = 3
 scaleTool.myName="scaleTool"
 
+toolBarOffsetX=toolBarOffsetX+1
+speedTool = display.newImage( "img/speedTool.png", gridSize*toolBarOffsetX, gridSize*1 )
+physics.addBody( speedTool, "static", { density=0, friction=0, bounce=0 } )
+speedTool.angularDamping = 3
+speedTool.myName="speedTool"
+
 
 toolBarOffsetX=toolBarOffsetX+1
 saveTool = display.newImage( "img/save.png", gridSize*toolBarOffsetX, gridSize*1 )
@@ -366,6 +384,11 @@ local function dragObject( event, params )
 		if event.target.myName=="scaleTool" then
 			print("scale tool clicked")
 			changeScale()
+			return true
+		end
+		if event.target.myName=="speedTool" then
+			print("speed tool clicked")
+			changeSpeed()
 			return true
 		end
 		if event.target.myName=="saveTool" then
@@ -944,6 +967,7 @@ pinOffTool:addEventListener( "touch", dragObject )
 gravityOffTool:addEventListener( "touch", dragObject )
 gravityOnTool:addEventListener( "touch", dragObject )
 scaleTool:addEventListener( "touch", dragObject )
+speedTool:addEventListener( "touch", dragObject )
 initTools()--inital setting of alpha channels
 -- sword:addEventListener( "touch", dragObject ) -- Uncomment to make the sword draggable too.
 
@@ -1119,7 +1143,7 @@ function clearSubmenu()
 	submenuShowing=false
 end
 
-balloonLevitateTimer = timer.performWithDelay( 180, balloonLevitate, 0 )
+balloonLevitateTimer = timer.performWithDelay( 180*speed, balloonLevitate, 0 )
 
 removequeue={}
 local function onGlobalCollision( event )
