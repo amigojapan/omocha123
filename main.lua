@@ -42,7 +42,7 @@ function changeToThisScale(scale)
 end
 
 function changeScale()
-	showInputBox("enter scale number:",saveFile)
+	showInputBox("enter scale number:",changeToThisScale)
 end
 
 function saveFile(fileName)
@@ -361,6 +361,8 @@ local function dragObject( event, params )
 			clearSubmenu()
 			return true
 		end
+		--**confinbue here, does not print, the following line:
+		print("debug event.target.myName:"..event.target.myName)
 		if event.target.myName=="scaleTool" then
 			print("scale tool clicked")
 			changeScale()
@@ -431,7 +433,7 @@ local function dragObject( event, params )
 				saveTool.alpha=1
 				arc.alpha=0.3
 				stopTool.alpha=0.3
-				
+
 				return true
 			end
 		else--edit  mode
@@ -941,7 +943,7 @@ pinOnTool:addEventListener( "touch", dragObject )
 pinOffTool:addEventListener( "touch", dragObject )
 gravityOffTool:addEventListener( "touch", dragObject )
 gravityOnTool:addEventListener( "touch", dragObject )
-
+scaleTool:addEventListener( "touch", dragObject )
 initTools()--inital setting of alpha channels
 -- sword:addEventListener( "touch", dragObject ) -- Uncomment to make the sword draggable too.
 
