@@ -30,6 +30,8 @@ display.setDefault( "background", 0, 0.3, 0.8 )
 gridSize=64
 gridWidth=15
 gridHeight=11
+--**triangle shape definition
+local triangleShape = { 0,-35, 37,30, -37,30 }
 --vatiables
 speed=1
 --helperfunctions
@@ -345,6 +347,10 @@ addCircleYellow=nil
 addCircleRed=nil
 addCircleGreen=nil
 addCircleBlue=nil
+addTriangleYellow=nil
+addTriangleRed=nil
+addTriangleGreen=nil
+addTriangleBlue=nil
 addBalloon=nil
 addSpike=nil
 submenuShowing=false
@@ -581,8 +587,66 @@ local function dragObject( event, params )
 
 				toolBarOffsetX=3
 				toolBarOffsetY=2
+				addTriangleYellow = display.newImage("img/triangle-yellow.png", toolBarOffsetX*gridSize, toolBarOffsetY*gridSize)
+				--addTriangleYellow.path.radius = 64
+				local paint = {
+					type = "image",
+					filename = "img/triangle-yellow.png"
+				}
+				-- Fill the circle
+				addTriangleYellow.fill = paint
+				physics.addBody( addTriangleYellow, "static", {shape=triangleShape, density=0, friction=0, bounce=0 } )
+				addTriangleYellow.angularDamping = 3
+				addTriangleYellow.myName="addTriangleYellow"
+				addTriangleYellow:addEventListener( "touch", dragObject )
+
+
+				toolBarOffsetY=toolBarOffsetY+1
+				addTriangleRed = display.newImage("img/triangle-red.png",toolBarOffsetX*gridSize, toolBarOffsetY*gridSize)
+				addTriangleRed.path.radius = 64
+				local paint = {
+					type = "image",
+					filename = "img/triangle-red.png"
+				}
+				-- Fill the circle
+				addTriangleRed.fill = paint
+				physics.addBody( addTriangleRed, "static", {shape=triangleShape, density=0, friction=0, bounce=0 } )
+				addTriangleRed.angularDamping = 3
+				addTriangleRed.myName="addTriangleRed"
+				addTriangleRed:addEventListener( "touch", dragObject )
+
+
+				toolBarOffsetY=toolBarOffsetY+1
+				addTriangleGreen = display.newImage("img/triangle-green.png",toolBarOffsetX*gridSize, toolBarOffsetY*gridSize )
+				--addTriangleGreen.path.radius = 64
+				local paint = {
+					type = "image",
+					filename = "img/triangle-green.png"
+				}
+				-- Fill the circle
+				addTriangleGreen.fill = paint
+				physics.addBody( addTriangleGreen, "static", {shape=triangleShape, density=0, friction=0, bounce=0 } )
+				addTriangleGreen.angularDamping = 3
+				addTriangleGreen.myName="addTriangleGreen"
+				addTriangleGreen:addEventListener( "touch", dragObject )
+				
+				toolBarOffsetY=toolBarOffsetY+1
+				addTriangleBlue = display.newImage("img/triangle-blue.png", toolBarOffsetX*gridSize, toolBarOffsetY*gridSize)
+				--addTriangleBlue.path.radius = 64
+				local paint = {
+					type = "image",
+					filename = "img/triangle-blue.png"
+				}
+				-- Fill the circle
+				addTriangleBlue.fill = paint
+				physics.addBody( addTriangleBlue, "static", {shape=triangleShape, density=0, friction=0, bounce=0 } )
+				addTriangleBlue.angularDamping = 3
+				addTriangleBlue.myName="addTriangleBlue"
+				addTriangleBlue:addEventListener( "touch", dragObject )
+
+				toolBarOffsetY=toolBarOffsetY+1
 				addBalloon = display.newCircle( toolBarOffsetX*gridSize, toolBarOffsetY*gridSize, 10 )
-				addBalloon.path.radius = 64
+				--addBalloon.path.radius = 64
 				local paint = {
 					type = "image",
 					filename = "img/balloon.png"
@@ -724,7 +788,92 @@ local function dragObject( event, params )
 				clearSubmenu()
 				return true
 			end
-			
+
+			if selectedItem.myName=="addTriangleYellow" then
+				print("add circle blue tool clicked!")
+				local circleBlue = display.newImage("img/triangle-yellow.png", selectedItem.x, selectedItem.y, 64 )
+				--circleBlue.path.radius = 64
+				local paint = {
+					type = "image",
+					filename = "img/ball-blue.png"
+				}
+				-- Fill the circle
+				--circleBlue.fill = paint
+
+				--local block = display.newImage( "img/block-blue.png", 480, 100 )
+				physics.addBody( circleBlue, "dynamic", { shape=triangleShape, density=1, friction=2, bounce=0 } )
+				circleBlue.angularDamping = 3
+				circleBlue.myName="triangle"
+				circleBlue.color="yellow"
+				circleBlue:addEventListener( "touch", dragObject )
+				table.insert(itemTable,circleBlue)
+				clearSubmenu()
+				return true
+			end
+			if selectedItem.myName=="addTriangleRed" then
+				print("add circle blue tool clicked!")
+				local circleBlue = display.newImage("img/triangle-red.png", selectedItem.x, selectedItem.y, 64 )
+				circleBlue.path.radius = 64
+				local paint = {
+					type = "image",
+					filename = "img/ball-blue.png"
+				}
+				-- Fill the circle
+				--circleBlue.fill = paint
+
+				--local block = display.newImage( "img/block-blue.png", 480, 100 )
+				physics.addBody( circleBlue, "dynamic", { shape=triangleShape, density=1, friction=2, bounce=0 } )
+				circleBlue.angularDamping = 3
+				circleBlue.myName="triangle"
+				circleBlue.color="red"
+				circleBlue:addEventListener( "touch", dragObject )
+				table.insert(itemTable,circleBlue)
+				clearSubmenu()
+				return true
+			end
+			if selectedItem.myName=="addTriangleGreen" then
+				print("add circle blue tool clicked!")
+				local circleBlue = display.newImage("img/triangle-green.png", selectedItem.x, selectedItem.y, 64 )
+				circleBlue.path.radius = 64
+				local paint = {
+					type = "image",
+					filename = "img/ball-blue.png"
+				}
+				-- Fill the circle
+				--circleBlue.fill = paint
+
+				--local block = display.newImage( "img/block-blue.png", 480, 100 )
+				physics.addBody( circleBlue, "dynamic", { shape=triangleShape, density=1, friction=2, bounce=0 } )
+				circleBlue.angularDamping = 3
+				circleBlue.myName="triangle"
+				circleBlue.color="green"
+				circleBlue:addEventListener( "touch", dragObject )
+				table.insert(itemTable,circleBlue)
+				clearSubmenu()
+				return true
+			end
+			if selectedItem.myName=="addTriangleBlue" then
+				print("add circle blue tool clicked!")
+				local circleBlue = display.newImage("img/triangle-blue.png", selectedItem.x, selectedItem.y, 64 )
+				circleBlue.path.radius = 64
+				local paint = {
+					type = "image",
+					filename = "img/ball-blue.png"
+				}
+				-- Fill the circle
+				--circleBlue.fill = paint
+
+				--local block = display.newImage( "img/block-blue.png", 480, 100 )
+				physics.addBody( circleBlue, "dynamic", { shape=triangleShape, density=1, friction=2, bounce=0 } )
+				circleBlue.angularDamping = 3
+				circleBlue.myName="triangle"
+				circleBlue.color="blue"
+				circleBlue:addEventListener( "touch", dragObject )
+				table.insert(itemTable,circleBlue)
+				clearSubmenu()
+				return true
+			end
+
 			if selectedItem.myName=="addSpike" then
 				print("add baloon tool clicked!")
 				local circleSpike = display.newCircle( selectedItem.x, selectedItem.y, 64 )
@@ -916,7 +1065,7 @@ local function dragObject( event, params )
 					end
 				end
 			else--edit mode
-				print(tostring(selectedItem.myName))
+				print("selected item:"..tostring(selectedItem.myName))
 				if selectedItem.myName=="arcTool" then
 					body.x=event.x
 					body.y=gridSize*2
@@ -1029,6 +1178,18 @@ function reproduceInitioalState()
 			end
 			b = display.newImage( imageA, item.x, item.y )
 			physics.addBody( b, "dynamic", { density=1, friction=2, bounce=0 } )
+		elseif item.myName=="triangle" then
+			if item.color=="yellow" then
+				imageA="img/triangle-yellow.png"
+			elseif item.color=="red" then
+				imageA="img/triangle-red.png"
+			elseif item.color=="green" then
+				imageA="img/triangle-green.png"
+			elseif item.color=="blue" then
+				imageA="img/triangle-blue.png"
+			end
+			b = display.newImage( imageA, item.x, item.y )
+			physics.addBody( b, "dynamic", { shape=triangleShape, density=1, friction=2, bounce=0 } )	
 		elseif item.myName=="circle" then
 			b = display.newCircle( item.x, item.y, 64 )
 			b.path.radius = 64
@@ -1124,6 +1285,18 @@ function clearSubmenu()
 	end
 	if addCircleYellow then
 		addCircleYellow:removeSelf()
+	end
+	if addTriangleYellow then
+		addTriangleYellow:removeSelf()
+	end	
+	if addTriangleRed then
+		addTriangleRed:removeSelf()
+	end	
+	if addTriangleGreen then
+		addTriangleGreen:removeSelf()
+	end	
+	if addTriangleBlue then
+		addTriangleBlue:removeSelf()
 	end
 	if addCircleRed then
 		addCircleRed:removeSelf()
