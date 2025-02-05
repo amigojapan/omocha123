@@ -408,7 +408,7 @@ local function dragObject( event, params )
 			return true
 		end
 		display.getCurrentStage():setFocus( event.target, event.id )
-		if event.target.myName=="block" or event.target.myName=="circle" or event.target.myName=="balloon" or event.target.myName=="spike" or event.target.myName=="brick" then--move above selected item
+		if event.target.myName=="block" or event.target.myName=="circle" or event.target.myName=="balloon" or event.target.myName=="spike" or event.target.myName=="brick" or event.target.myName=="triangle"then--move above selected item
 			editingItem=event.target
 			if editingItem.bodyType == "static" then
 				pinOnTool.alpha=0.3
