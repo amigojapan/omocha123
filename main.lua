@@ -78,7 +78,7 @@ function saveFile(fileName)
 		--native.showAlert("alertbox", "here1" .. filename .. "filecontent"..fileContent, {"OK"})
 		if (event.isError) then
 			print("Network error: ", event.response)
-			native.showAlert("Error", "Network error occurred.", {"OK"})
+			native.showAlert("Error", "Network error occurred:"..tostring(event.response), {"OK"})
 		else
 			print("Response: ", event.response)
 			--** show reponse to see if it works on android
